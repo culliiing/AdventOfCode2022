@@ -9,21 +9,30 @@ namespace AdventOfCode
         {
             MostCarriedCalories();
             Console.ReadKey();
+        }
 
-            void MostCarriedCalories()
+        public static void MostCarriedCalories()
+        {
+            Elf.ReadSnackList("input.txt");
+
+            // Print Elf Count
+            Console.WriteLine("Amount of elves: " + Elf.GetElves().Count().ToString());
+
+            // Print Elf inventories, starting with first elf in the list
+            PrintElfInventory(3);
+
+            Console.WriteLine("Largest Calorie Sum: " + Elf.GetLargestCalorieSum());
+            Console.WriteLine("Sum of the largest calorie sums: " + Elf.GetLargestCalorieSum(3));
+        }
+
+        public static void PrintElfInventory(int amountOfElves)
+        {
+            for (int i = 0; i < amountOfElves; i++)
             {
-                Elf.ReadSnackList("input.txt");
-                //Console.WriteLine("Amount of elves: " + Elf.GetElves().Count().ToString());
-
-                //for (int i = 0; i < 3; i++)
-                //{
-                //    Console.WriteLine("Elf Number " + (i+1) + "'s Snack Calorie Values");
-                //    Console.WriteLine("-------------------------------------------");
-                //    Elf.GetElves()[i].PrintSnacks();
-                //    Console.WriteLine("-------------------------------------------");
-                //}
-
-                Console.WriteLine("Largest Calorie Sum: " + Elf.GetLargestCalorieSum());
+                Console.WriteLine("Elf Number " + (i + 1) + "'s Snack Calorie Values");
+                Console.WriteLine("-------------------------------------------");
+                Elf.GetElves()[i].PrintSnacks();
+                Console.WriteLine("-------------------------------------------");
             }
         }
     }
@@ -71,7 +80,8 @@ namespace AdventOfCode
             }
         }
 
-        public int SumCalories()
+        // Sum the calories of all snacks carried by an elf
+        public int SumCarriedCalories()
         {
             int calorieSum = 0;
 
@@ -104,15 +114,51 @@ namespace AdventOfCode
             }
         }
 
+        // Calculates the sum of calories carried by the elf carrying the most calories
         public static int GetLargestCalorieSum()
         {
             int largestCalorieSum = 0;
 
             foreach(Elf elf in elves)
-                if(largestCalorieSum < elf.SumCalories())
-                    largestCalorieSum = elf.SumCalories();
+                if(largestCalorieSum < elf.SumCarriedCalories())
+                    largestCalorieSum = elf.SumCarriedCalories();
 
             return largestCalorieSum;
+        }
+        
+        // Calculates the sums of calories carried by the elves who carry the largest sums of calories
+        public static int GetLargestCalorieSum(int amountOfTopSums)
+        {
+            int[] largestCalorieSums = new int[amountOfTopSums];
+            int largestCalorieSumsSum = 0;
+
+            Elf[] excludedElves = new Elf[amountOfTopSums];
+
+            for (int i = 0; i < amountOfTopSums; i++)
+            {
+                foreach(Elf elf in elves)
+                {
+                    if (excludedElves.Contains(elf))
+                        continue;
+                    else if (largestCalorieSums[i] < elf.SumCarriedCalories())
+                        largestCalorieSums[i] = elf.SumCarriedCalories();
+                }
+
+                largestCalorieSumsSum += GetElfWithCalorieAmount(largestCalorieSums[i]).SumCarriedCalories();
+                excludedElves[i] = GetElfWithCalorieAmount(largestCalorieSums[i]);
+            }
+
+            return largestCalorieSumsSum;
+        }
+
+        // Find the elf with a certain calorie count
+        public static Elf GetElfWithCalorieAmount(int totalCarriedCalories)
+        {
+            foreach (Elf elf in elves)
+                if (elf.SumCarriedCalories() == totalCarriedCalories)
+                    return elf;
+
+            return null;
         }
     }
 }
